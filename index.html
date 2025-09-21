@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Birthday, Angelita!</title>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        /* CONFIG — Edit these colors and fonts as desired */
+        :root {
+            --primary: #FFB6C1;    /* light pink */
+            --secondary: #E6E6FA;  /* lavender */
+            --accent: #B0E0E6;     /* powder blue */
+            --highlight: #98FF98;  /* mint green */
+            --sparkle: #FFD700;    /* soft gold */
+            --text-dark: #5a5a5a;
+            --text-light: #ffffff;
+            --font-heading: 'Dancing Script', cursive, 'Apple Chancery', 'Brush Script MT', serif;
+            --font-body: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background: linear-gradient(135deg, var(--secondary) 0%, var(--primary) 100%);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            transition: background 1.5s ease;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            text-align: center;
+            position: relative;
+        }
+
+        /* Countdown styles */
+        .countdown {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .countdown h1 {
+            font-family: var(--font-heading);
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: var(--primary);
+        }
+
+        .timer {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .time-unit {
+            background: var(--highlight);
+            border-radius: 10px;
+            padding: 15px 10px;
+            min-width: 80px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .time-value {
+            font-size: 2.2rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .time-label {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-dark);
+            opacity: 0.8;
+        }
+
+        .time-words {
+            font-size: 1.2rem;
+            margin-top: 10px;
+            font-weight: 300;
+        }
+
+        /* Celebration styles */
+        .celebration {
+            display: none;
+            position: relative;
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: 20px;
+            padding: 40px 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            backdrop-filter: blur(5px);
+        }
+
+        .banner {
+            font-family: var(--font-heading);
+            font-size: 3.5rem;
+            color: var(--primary);
+            margin-bottom: 30px;
+            animation: fadeIn 1.5s ease, float 3s ease-in-out infinite alternate;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .poem {
+            font-size: 1.3rem;
+            line-height: 1.6;
+            max-width: 600px;
+            margin: 0 auto 30px;
+            font-weight: 300;
+            opacity: 0;
+            animation: fadeIn 2s ease 1.5s forwards;
+            white-space: pre-line;
+        }
+
+        .signature {
+            font-style: italic;
+            margin-top: 20px;
+            opacity: 0.8;
+        }
+
+        /* Button styles */
+        .btn {
+            background: var(--accent);
+            color: var(--text-dark);
+            border: none;
+            border-radius: 50px;
+            padding: 12px 25px;
+            font-family: var(--font-body);
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn:hover, .btn:focus {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            background: var(--highlight);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-share {
+            background: var(--sparkle);
+        }
+
+        /* Confetti canvas */
+        #confetti-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* Balloon styles */
+        .balloon {
+            position: absolute;
+            width: 40px;
+            height: 50px;
+            border-radius: 50%;
+            opacity: 0.8;
+            z-index: -1;
+        }
+
+        .balloon::after {
+            content: "";
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 15px;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        /* Accessibility */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /* Reduced motion support */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes float {
+            from { transform: translateY(0); }
+            to { transform: translateY(-10px); }
+        }
+
+        @keyframes grow {
+            from { transform: scale(0); }
+            to { transform: scale(1); }
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .timer {
+                flex-wrap: wrap;
+            }
+            
+            .banner {
+                font-size: 2.5rem;
+            }
+            
+            .poem {
+                font-size: 1.1rem;
+            }
+            
+            .time-unit {
+                min-width: 70px;
+                padding: 10px 5px;
+            }
+            
+            .time-value {
+                font-size: 1.8rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .banner {
+                font-size: 2rem;
+            }
+            
+            .time-unit {
+                min-width: 60px;
+            }
+            
+            .time-value {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="countdown" id="countdown">
+            <h1>Angelita's Birthday Countdown</h1>
+            <div class="timer">
+                <div class="time-unit">
+                    <div class="time-value" id="days">00</div>
+                    <div class="time-label">Days</div>
+                </div>
+                <div class="time-unit">
+                    <div class="time-value" id="hours">00</div>
+                    <div class="time-label">Hours</div>
+                </div>
+                <div class="time-unit">
+                    <div class="time-value" id="minutes">00</div>
+                    <div class="time-label">Minutes</div>
+                </div>
+                <div class="time-unit">
+                    <div class="time-value" id="seconds">00</div>
+                    <div class="time-label">Seconds</div>
+                </div>
+            </div>
+            <div class="time-words" id="time-words" aria-live="polite"></div>
+            <button class="btn" id="celebrate-now">Celebrate Now!</button>
+        </div>
+
+        <div class="celebration" id="celebration">
+            <div class="banner">HAPPY BIRTHDAY, ANGELITA!</div>
+            <div class="poem" id="poem" aria-live="polite"></div>
+            <button class="btn" id="replay">Replay Animation</button>
+            <button class="btn" id="toggle-music">Play Music</button>
+            <button class="btn btn-share" id="share">Share</button>
+        </div>
+    </div>
+
+    <canvas id="confetti-canvas"></canvas>
+
+    <noscript>
+        <div class="container">
+            <div class="celebration">
+                <div class="banner">HAPPY BIRTHDAY, ANGELITA!</div>
+                <div class="poem">
+                    Angelita — today the world shines brighter,
+                    Soft petals whisper your sweet name;
+                    Laughter circles like warm sunlight,
+                    Dreams take flight, and love remains.
+                    May each hour be wrapped in wonder,
+                    Each moment glitter with delight;
+                    Happy birthday, dearest Angelita —
+                    Your heart makes every day more bright.
+
+                    <div class="signature">— With love, [your name]</div>
+                </div>
+                <p>Enable JavaScript to see the countdown and animations!</p>
+            </div>
+        </div>
+    </noscript>
+
+    <script>
+        // CONFIG — Edit these:
+        const TARGET_DATE = '2025-09-22T00:00:00'; // Angelita's birthday countdown target
+        const NAME = 'ANGELITA';
+        const THEME = {
+            primary: '#FFB6C1', // light pink
+            secondary: '#E6E6FA', // lavender
+            accent: '#B0E0E6',   // powder blue
+            highlight: '#98FF98', // mint green
+            sparkle: '#FFD700'   // soft gold
+        };
+        const MUSIC_URL = null; // Add a URL for optional birthday music
+        const POEM = `Angelita — today the world shines brighter,
+Soft petals whisper your sweet name;
+Laughter circles like warm sunlight,
+Dreams take flight, and love remains.
+May each hour be wrapped in wonder,
+Each moment glitter with delight;
+Happy birthday, dearest Angelita —
+Your heart makes every day more bright.
+
+— With love, [your name]`;
+
+        // Application code
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elements
+            const countdownEl = document.getElementById('countdown');
+            const celebrationEl = document.getElementById('celebration');
+            const daysEl = document.getElementById('days');
+            const hoursEl = document.getElementById('hours');
+            const minutesEl = document.getElementById('minutes');
+            const secondsEl = document.getElementById('seconds');
+            const timeWordsEl = document.getElementById('time-words');
+            const poemEl = document.getElementById('poem');
+            const celebrateNowBtn = document.getElementById('celebrate-now');
+            const replayBtn = document.getElementById('replay');
+            const toggleMusicBtn = document.getElementById('toggle-music');
+            const shareBtn = document.getElementById('share');
+            const confettiCanvas = document.getElementById('confetti-canvas');
+            
+            // State
+            let confettiAnimation = null;
+            let audio = null;
+            let isMusicPlaying = false;
+            
+            // Initialize
+            confettiCanvas.width = window.innerWidth;
+            confettiCanvas.height = window.innerHeight;
+            
+            // Set up poem with typewriter effect
+            function typeWriter(text, element, speed = 50) {
+                element.innerHTML = '';
+                let i = 0;
+                
+                function type() {
+                    if (i < text.length) {
+                        element.innerHTML += text.charAt(i);
+                        i++;
+                        setTimeout(type, speed);
+                    }
+                }
+                
+                type();
+            }
+            
+            // Update countdown
+            function updateCountdown() {
+                const now = new Date();
+                const target = new Date(TARGET_DATE);
+                const difference = target - now;
+                
+                if (difference <= 0) {
+                    // Birthday has arrived!
+                    daysEl.textContent = '00';
+                    hoursEl.textContent = '00';
+                    minutesEl.textContent = '00';
+                    secondsEl.textContent = '00';
+                    timeWordsEl.textContent = "Birthday has arrived — tap Celebrate!";
+                    startCelebration();
+                    return;
+                }
+                
+                const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+                
+                daysEl.textContent = days.toString().padStart(2, '0');
+                hoursEl.textContent = hours.toString().padStart(2, '0');
+                minutesEl.textContent = minutes.toString().padStart(2, '0');
+                secondsEl.textContent = seconds.toString().padStart(2, '0');
+                
+                // Update time in words
+                let timeWords = '';
+                if (days > 0) timeWords += `${days} day${days !== 1 ? 's' : ''}, `;
+                if (hours > 0 || days > 0) timeWords += `${hours} hour${hours !== 1 ? 's' : ''}, `;
+                timeWords += `${minutes} minute${minutes !== 1 ? 's' : ''} and `;
+                timeWords += `${seconds} second${seconds !== 1 ? 's' : ''}`;
+                
+                timeWordsEl.textContent = timeWords;
+            }
+            
+            // Confetti effect
+            function createConfetti() {
+                const ctx = confettiCanvas.getContext('2d');
+                const confetti = [];
+                const confettiCount = 150;
+                const gravity = 0.5;
+                const terminalVelocity = 5;
+                const drag = 0.075;
+                const colors = [
+                    { front: THEME.primary, back: THEME.secondary },
+                    { front: THEME.accent, back: THEME.highlight },
+                    { front: THEME.sparkle, back: '#ffffff' }
+                ];
+                
+                // Initialize confetti particles
+                for (let i = 0; i < confettiCount; i++) {
+                    confetti.push({
+                        color: colors[Math.floor(Math.random() * colors.length)],
+                        dimensions: {
+                            x: Math.random() * 10 + 5,
+                            y: Math.random() * 10 + 5
+                        },
+                        position: {
+                            x: Math.random() * confettiCanvas.width,
+                            y: -10
+                        },
+                        rotation: Math.random() * 2 * Math.PI,
+                        scale: {
+                            x: 1,
+                            y: 1
+                        },
+                        velocity: {
+                            x: Math.random() * 10 - 5,
+                            y: Math.random() * 5 + 5
+                        }
+                    });
+                }
+                
+                // Animation function
+                function renderConfetti() {
+                    ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+                    
+                    confetti.forEach((confetto, index) => {
+                        let width = confetto.dimensions.x * confetto.scale.x;
+                        let height = confetto.dimensions.y * confetto.scale.y;
+                        
+                        // Apply physics
+                        confetto.velocity.x -= confetto.velocity.x * drag;
+                        confetto.velocity.y = Math.min(confetto.velocity.y + gravity, terminalVelocity);
+                        confetto.velocity.y -= confetto.velocity.y * drag;
+                        
+                        confetto.position.x += confetto.velocity.x;
+                        confetto.position.y += confetto.velocity.y;
+                        
+                        // Spin confetto
+                        confetto.rotation += confetto.velocity.x / 20;
+                        
+                        // Delete if out of view
+                        if (confetto.position.y >= confettiCanvas.height) {
+                            confetti.splice(index, 1);
+                            return;
+                        }
+                        
+                        // Draw confetto
+                        ctx.save();
+                        ctx.translate(confetto.position.x, confetto.position.y);
+                        ctx.rotate(confetto.rotation);
+                        
+                        ctx.fillStyle = confetto.color.front;
+                        ctx.fillRect(-width / 2, -height / 2, width, height);
+                        
+                        ctx.restore();
+                    });
+                    
+                    // Continue animation if there are still confetti
+                    if (confetti.length > 0) {
+                        confettiAnimation = requestAnimationFrame(renderConfetti);
+                    }
+                }
+                
+                renderConfetti();
+            }
+            
+            // Create balloons
+            function createBalloons() {
+                const balloonColors = [THEME.primary, THEME.secondary, THEME.accent, THEME.highlight, THEME.sparkle];
+                
+                for (let i = 0; i < 15; i++) {
+                    const balloon = document.createElement('div');
+                    balloon.className = 'balloon';
+                    balloon.style.left = Math.random() * 100 + '%';
+                    balloon.style.bottom = '-60px';
+                    balloon.style.backgroundColor = balloonColors[Math.floor(Math.random() * balloonColors.length)];
+                    balloon.style.animation = `grow 0.5s ease-out, float ${15 + Math.random() * 10}s ease-in-out ${Math.random() * 5}s infinite`;
+                    
+                    document.body.appendChild(balloon);
+                    
+                    // Remove balloon after animation completes
+                    setTimeout(() => {
+                        balloon.remove();
+                    }, 20000);
+                }
+            }
+            
+            // Start celebration
+            function startCelebration() {
+                countdownEl.style.display = 'none';
+                celebrationEl.style.display = 'block';
+                
+                // Change background
+                document.body.style.background = `linear-gradient(135deg, ${THEME.secondary} 0%, ${THEME.accent} 50%, ${THEME.primary} 100%)`;
+                
+                // Start animations
+                createConfetti();
+                createBalloons();
+                
+                // Type the poem
+                typeWriter(POEM, poemEl);
+            }
+            
+            // Toggle music
+            function toggleMusic() {
+                if (!MUSIC_URL) {
+                    alert('Add a music URL in the configuration to enable music');
+                    return;
+                }
+                
+                if (!audio) {
+                    audio = new Audio(MUSIC_URL);
+                    audio.loop = true;
+                }
+                
+                if (isMusicPlaying) {
+                    audio.pause();
+                    toggleMusicBtn.textContent = 'Play Music';
+                } else {
+                    audio.play().catch(e => {
+                        console.error('Music playback failed:', e);
+                        alert('Music playback failed. Please interact with the page first or check the music URL.');
+                    });
+                    toggleMusicBtn.textContent = 'Pause Music';
+                }
+                
+                isMusicPlaying = !isMusicPlaying;
+            }
+            
+            // Share page
+            function sharePage() {
+                if (navigator.share) {
+                    navigator.share({
+                        title: `Happy Birthday ${NAME}!`,
+                        text: `Celebrate ${NAME}'s birthday with this special page!`,
+                        url: window.location.href
+                    })
+                    .then(() => console.log('Shared successfully'))
+                    .catch(error => console.log('Sharing failed', error));
+                } else {
+                    // Fallback for browsers that don't support Web Share API
+                    navigator.clipboard.writeText(window.location.href)
+                        .then(() => {
+                            const originalText = shareBtn.textContent;
+                            shareBtn.textContent = 'Copied!';
+                            setTimeout(() => {
+                                shareBtn.textContent = originalText;
+                            }, 2000);
+                        })
+                        .catch(err => {
+                            console.error('Failed to copy: ', err);
+                            alert('Copy this URL to share: ' + window.location.href);
+                        });
+                }
+            }
+            
+            // Event listeners
+            celebrateNowBtn.addEventListener('click', startCelebration);
+            replayBtn.addEventListener('click', startCelebration);
+            toggleMusicBtn.addEventListener('click', toggleMusic);
+            shareBtn.addEventListener('click', sharePage);
+            
+            // Initialize countdown
+            updateCountdown();
+            setInterval(updateCountdown, 1000);
+            
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                confettiCanvas.width = window.innerWidth;
+                confettiCanvas.height = window.innerHeight;
+                
+                if (confettiAnimation) {
+                    cancelAnimationFrame(confettiAnimation);
+                    createConfetti();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
