@@ -196,12 +196,17 @@
             -webkit-text-fill-color: transparent;
             padding: 20px;
             border-radius: 15px;
+            min-height: 120px; /* ensure stable layout while typing */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
         }
 
         .signature {
             font-style: italic;
             margin-top: 25px;
-            opacity: 0.9;
+            opacity: 0.95;
             font-size: 1.2rem;
             color: var(--text-dark);
         }
@@ -504,16 +509,18 @@
             sparkle: '#FFD700'   // soft gold
         };
         const MUSIC_URL = null; // Add a URL for optional birthday music
-        const POEM = `Angelita — today the world shines brighter,
-Soft petals whisper your sweet name;
-Laughter circles like warm sunlight,
-Dreams take flight, and love remains.
-May each hour be wrapped in wonder,
-Each moment glitter with delight;
-Happy birthday, dearest Angelita —
-Your heart makes every day more bright.
 
-— With love, Samuell`;
+        // Improved poem (signature handled separately so it appears after typing)
+        const POEM = `Angelita, the morning hums in rose and gold,
+Soft petals bow and hush the busy day;
+Your laughter lifts like ribbons in the sun,
+And every gentle wish finds its own way.
+May wonder wrap each hour you keep,
+And starlit dreams adorn your night;
+A life of sweetness, bright and deep —
+Happy birthday, dear Angelita, shine your light.`;
+
+        const SIGNATURE_TEXT = '— With love, Samuell';
 
         // Application code
         document.addEventListener('DOMContentLoaded', function() {
@@ -537,7 +544,8 @@ Your heart makes every day more bright.
             let audio = null;
             let isMusicPlaying = false;
             let floatingElements = [];
-            
+            let celebrationTriggered = false; // <- guard so celebration is auto-started only once
+
             // Initialize
             confettiCanvas.width = window.innerWidth;
             confettiCanvas.height = window.innerHeight;
@@ -575,16 +583,29 @@ Your heart makes every day more bright.
                 }
             }
             
-            // Set up poem with typewriter effect
-            function typeWriter(text, element, speed = 50) {
+            // Set up poem with typewriter effect (supports callback when finished)
+            function typeWriter(text, element, speed = 40, callback) {
                 element.innerHTML = '';
+                // ensure poem element visible so text doesn't "collapse"
+                element.style.opacity = '1';
                 let i = 0;
                 
                 function type() {
                     if (i < text.length) {
-                        element.innerHTML += text.charAt(i);
+                        // append character but preserve line breaks
+                        const ch = text.charAt(i);
+                        if (ch === '\n') {
+                            element.innerHTML += '<br>';
+                        } else {
+                            // escape HTML characters for safety
+                            const span = document.createElement('span');
+                            span.textContent = ch;
+                            element.appendChild(span);
+                        }
                         i++;
                         setTimeout(type, speed);
+                    } else {
+                        if (typeof callback === 'function') callback();
                     }
                 }
                 
@@ -604,7 +625,11 @@ Your heart makes every day more bright.
                     minutesEl.textContent = '00';
                     secondsEl.textContent = '00';
                     timeWordsEl.textContent = "Birthday has arrived — tap Celebrate!";
-                    startCelebration();
+                    // trigger celebration automatically only once
+                    if (!celebrationTriggered) {
+                        celebrationTriggered = true;
+                        startCelebration();
+                    }
                     return;
                 }
                 
@@ -705,6 +730,11 @@ Your heart makes every day more bright.
                     // Continue animation if there are still confetti
                     if (confetti.length > 0) {
                         confettiAnimation = requestAnimationFrame(renderConfetti);
+                    } else {
+                        // fade the canvas out a bit after done
+                        setTimeout(() => {
+                            ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+                        }, 1000);
                     }
                 }
                 
@@ -736,6 +766,7 @@ Your heart makes every day more bright.
             
             // Start celebration
             function startCelebration() {
+                // keep countdown hidden
                 countdownEl.style.display = 'none';
                 celebrationEl.style.display = 'block';
                 
@@ -746,8 +777,16 @@ Your heart makes every day more bright.
                 createConfetti();
                 createBalloons();
                 
-                // Type the poem
-                typeWriter(POEM, poemEl);
+                // Type the poem and then append signature when done
+                poemEl.innerHTML = ''; // clear any previous display
+                typeWriter(POEM, poemEl, 36, () => {
+                    // after typing completes, append signature line (keeps it clear and readable)
+                    const sig = document.createElement('div');
+                    sig.className = 'signature';
+                    sig.textContent = SIGNATURE_TEXT;
+                    poemEl.appendChild(document.createElement('br'));
+                    poemEl.appendChild(sig);
+                });
             }
             
             // Toggle music
